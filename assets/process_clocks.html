@@ -7,17 +7,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
 :root{color-scheme:light;--bg:#ffffff;--ink:#0b0b0b;--ink2:#52514e;--ink3:#8a8984;--line:#e4e2db;--line2:#cfcdc4;--face:#fafaf8;
---c-transient:#2a78d6;--c-recurrent:#eb6834;--c-permanent:#1baf7a;--c-unconfirmed:#a3a29b;--crit:#c8312f;--unrest:#bdbab0;--normal:#b9b7ae;--ideal:#e9e8e2;--ideal-edge:#a9a79e;--t-temp:#d08a00;--t-flow:#2a78d6;--t-press:#6250d6;--norm:#3f9c4a;--h0:#d9d6cc;--h1:#f6c453;--h2:#f08a24;--h3:#d6312f}
+--c-transient:#2a78d6;--c-recurrent:#eb6834;--c-permanent:#1baf7a;--c-unconfirmed:#a3a29b;--crit:#c8312f;--unrest:#bdbab0;--normal:#b9b7ae;--ideal:#e9e8e2;--ideal-edge:#a9a79e;--t-temp:#d08a00;--t-flow:#2a78d6;--t-press:#6250d6;--norm:#2f9e44;--anom:#d6312f;--norm-bg:#e3f4e6;--h0:#d9d6cc;--h1:#f6c453;--h2:#f08a24;--h3:#d6312f}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .wrap{max-width:1400px;margin:0 auto;padding:4px 8px 8px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;min-height:40px}
-.crumbs{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:600}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:44px;padding:0 4px}
+.btns{display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.crumbs{display:flex;align-items:center;gap:6px;font-size:22px;font-weight:800;white-space:nowrap}
 .crumbs button{all:unset;cursor:pointer;color:var(--ink3);padding:2px 4px;border-radius:6px}
 .crumbs button:hover{color:var(--ink);background:var(--line)}
 .crumbs .cur{color:var(--ink)}
 .crumbs .sep{color:var(--ink3);font-weight:400}
-.legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink2);flex-wrap:wrap}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink2);justify-content:center;align-items:center;white-space:nowrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 svg{display:block;width:100%;height:100%}
 svg text{fill:var(--ink2);font-size:13px}
@@ -27,7 +28,7 @@ svg text{fill:var(--ink2);font-size:13px}
 .tip .m{color:var(--ink2)}
 .tip table{border-collapse:collapse;margin-top:3px}.tip td{padding:0 8px 0 0;font-variant-numeric:tabular-nums}
 .hintbar{font-size:12.5px;color:var(--ink3);text-align:center;height:18px;margin-top:4px}
-.foot{font-size:11.5px;color:var(--ink3);margin-top:6px}
+.foot{font-size:11.5px;color:var(--ink3);margin-top:6px;text-align:center}
 .pill{border:1px solid var(--line2);background:var(--face);color:var(--ink);border-radius:999px;padding:5px 14px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap;flex-shrink:0}
 .pill:hover{border-color:var(--ink3)}.pill.on{background:var(--ink);color:var(--face);border-color:var(--ink)}
 #storyBtn{background:linear-gradient(135deg,#f6a63a 0%,#ea5a2a 55%,#d6312f 100%);color:#fff;border:0;font-size:15px;font-weight:800;padding:9px 22px;letter-spacing:.3px;box-shadow:0 4px 14px rgba(214,49,47,.35);position:relative;transition:transform .15s,box-shadow .15s}
@@ -43,7 +44,9 @@ svg text{fill:var(--ink2);font-size:13px}
 .stage-wrap{position:relative}
 #bg{position:absolute;inset:0;width:100%;height:100%;opacity:.55;transition:opacity .8s;pointer-events:none;z-index:0}
 #v{position:relative;z-index:1;width:100%;height:100%}
-.capbar{height:30px;display:flex;justify-content:center;align-items:center;margin:2px 0}
+.capbar{position:relative;height:30px;display:flex;justify-content:center;align-items:center;margin:0 0 2px}
+.capbar .legend{transition:opacity .4s}.capbar:has(.cap.show) .legend{opacity:0}
+.capbar .cap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
 .cap{background:var(--ink);color:var(--face);padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:opacity .5s;white-space:nowrap;max-width:96%;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .cap.show{opacity:.9}
 @keyframes pulse{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.4)}}
@@ -54,10 +57,10 @@ svg text{fill:var(--ink2);font-size:13px}
 <body>
 <div class="wrap">
   <div class="top">
-    <div style="display:flex;gap:16px;align-items:center"><div class="crumbs" id="crumbs"></div></div>
-    <div style="display:flex;gap:16px;align-items:center"><div class="legend" id="legend"></div><button class="pill" id="storyBtn">▶ Play</button><button class="pill" id="stopBtn" style="display:none">■ Stop</button></div>
+    <div class="crumbs" id="crumbs"></div>
+    <div class="btns"><button class="pill" id="storyBtn">▶ Play</button><button class="pill" id="stopBtn" style="display:none">■ Stop</button></div>
   </div>
-  <div class="capbar"><div class="cap" id="cap"></div></div>
+  <div class="capbar"><div class="legend" id="legend"></div><div class="cap" id="cap"></div></div>
   <div class="stage-wrap"><svg id="bg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
 <g fill="none" stroke="#7f97b2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
 <path d="M0 520 H370" stroke-width="7" stroke="#c9d5e2"/><path d="M0 520 H370"/>
@@ -110,8 +113,8 @@ function radialHeat(){let d=svg.select('defs');if(d.empty())d=svg.insert('defs',
   [[R0/R3,'--h0'],[(R0+3)/R3,'--h1'],[(R0+3+SP)/R3,'--h2'],[1,'--h3']].forEach(([o,c])=>g.append('stop').attr('offset',o).attr('stop-color',css(c)));return'url(#rheat)'}
 const VW=1200,VH=700,TAU=Math.PI*2;
 const svg=d3.select('#v'),tip=d3.select('#tip');
-const R0=52,UMAX=3,SP=15,rU=u=>R0+2+Math.max(0,Math.min(UMAX,u)-1)*SP,ARC0=R0+2+(UMAX-1)*SP+8,AROW=8;
-const BIG={x:330,y:372,k:2.3};const P={x0:720,x1:1165};
+const R0=64,UMAX=3,SP=19,rU=u=>R0+2+Math.max(0,Math.min(UMAX,u)-1)*SP,ARC0=R0+2+(UMAX-1)*SP+8,AROW=8;
+const BIG={x:330,y:372,k:2.1};const P={x0:720,x1:1165};
 let D,S,TM,UN={},state={level:0,op:null,ev:null,sensor:null},busy=false;
 
 function showTip(h,e){tip.html(h).style('display','block');const w=tip.node().offsetWidth,hh=tip.node().offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-6)x=e.clientX-w-14;if(y+hh>innerHeight-6)y=e.clientY-hh-14;tip.style('left',x+'px').style('top',y+'px')}
@@ -125,6 +128,7 @@ const ang=t=>t/TM*TAU;
 const OUT={};function pctOut(op){if(OUT[op])return OUT[op];const R=D.ops[op],f=(arr,b)=>{const v=arr.filter(x=>x!=null);return v.length?v.filter(x=>x<b[0]||x>b[1]).length/v.length:0};
   const per=S.map(s=>({s,a:f(R.raw[s],R.band[s]),n:f(R.rawn[s],R.band[s])}));return OUT[op]={per,a:d3.mean(per,d=>d.a),n:d3.mean(per,d=>d.n)}}
 const UNN={};
+let GMO=null;function gMaxOut(){return GMO??=Math.max(.05,d3.max(Object.keys(D.ops),o=>pctOut(o).a))}
 const pol=(t,r)=>[Math.sin(ang(t))*r,-Math.cos(ang(t))*r];
 
 const EMBEDDED=/*__DATA__*/null;
@@ -132,7 +136,7 @@ Promise.resolve(EMBEDDED).then(j=>{
   D=j;S=j.sensors;TM=Math.ceil(d3.max(Object.values(D.ops),o=>d3.max(o.t))/10)*10+10;
   for(const op in D.ops){const R=D.ops[op],u=R.t.map((_,i)=>d3.max(S,s=>R.dev[s][i]));UN[op]=u.map((v,i)=>d3.mean(u.slice(Math.max(0,i-3),i+4)));
     const un=R.tn.map((_,i)=>d3.max(S,s=>R.devn[s][i]));UNN[op]=un.map((v,i)=>d3.mean(un.slice(Math.max(0,i-3),i+4)))}
-  d3.select('#legend').html(CATS.map(c=>`<span><i style="background:${cat(c)}"></i>${c}</span>`).join('')+`<span><i style="background:linear-gradient(90deg,var(--h1),var(--h2),var(--h3));border-radius:2px;width:22px"></i>unrest</span><span style="margin-left:10px;color:var(--ink3)">|</span>`+TYPES.map(([k,n])=>`<span><i style="background:var(--t-${k});border-radius:2px"></i>${n}</span>`).join('')+`<span style="margin-left:10px;color:var(--ink3)">|</span><span><i style="background:var(--norm)"></i>inside: normal run</span><span><i style="background:var(--h2)"></i>outside: anomalous run</span>`);
+  d3.select('#legend').html(`<span><i style="background:linear-gradient(90deg,var(--h1),var(--h2),var(--h3));border-radius:2px;width:22px"></i>unrest</span><span style="color:var(--line2)">|</span>`+TYPES.map(([k,n])=>`<span><i style="background:var(--t-${k});border-radius:2px"></i>${n}</span>`).join('')+`<span style="color:var(--line2)">|</span><span style="font-weight:700;color:var(--norm)"><i style="background:var(--norm)"></i>normal run</span><span style="font-weight:700;color:var(--anom)"><i style="background:var(--anom)"></i>anomalous run</span>`);
   level0(true);
 });
 
@@ -145,7 +149,9 @@ function crumbs(){
   c.forEach((d,i)=>{if(i)el.append('span').attr('class','sep').text('›');
     const last=i===c.length-1;el.append(last?'span':'button').attr('class',last?'cur':null).style('color',d[0]===state.op?opc(state.op):null).text(d[0]).on('click',last?null:()=>{if(!busy)d[1]()})});
   if(typeof setBtns==='function')setBtns();
-  d3.select('#bg').style('opacity',[0.5,0.13,0.1,0.1][state.level]);
+  fitView();
+  {const L0=state.level===0;d3.select('#v').attr('viewBox',L0?`-160 0 1520 ${H0}`:'0 0 1200 700');d3.select('#bg').attr('viewBox',L0?`-160 ${-(H0-700)/2} 1520 ${H0}`:'0 0 1200 700');}
+  d3.select('#bg').style('opacity',[0.32,0.13,0.1,0.1][state.level]);
   d3.select('#hint').text(['Click a clock','Click an anomaly arc or a sensor bar','Hover the lines to read every sensor',''][state.level]);
 }
 
@@ -153,13 +159,13 @@ function crumbs(){
 function drawClock(g,op,{intro=false}={}){
   const R=D.ops[op],u=UN[op],tEnd=d3.max(R.t);
   g.append('circle').attr('class','face').attr('r',ARC0+AROW*4+6).attr('fill',opTint(op)).attr('fill-opacity',.74).attr('stroke',opc(op)).attr('stroke-opacity',.55).attr('stroke-width',1.6).attr('vector-effect','non-scaling-stroke');
-  g.append('circle').attr('r',R0-1).attr('fill',opTint(op,.94));
+  g.append('circle').attr('r',R0-1).attr('fill','#fff');
   g.append('path').attr('d',d3.arc()({innerRadius:R0-1,outerRadius:R0,startAngle:0,endAngle:TAU})).attr('fill',css('--line2'));
   for(let m=0;m<TM;m+=30){const [x1,y1]=pol(m,R0-4),[x2,y2]=pol(m,R0-(m%60?7:10));g.append('line').attr('x1',x1).attr('y1',y1).attr('x2',x2).attr('y2',y2).attr('stroke',css('--ink3')).attr('stroke-width',.8).attr('vector-effect','non-scaling-stroke')}
   const area=d3.areaRadial().angle((d,i)=>ang(R.t[i])).innerRadius(R0).outerRadius(d=>rU(d)).curve(d3.curveMonotoneX);
   const ap=g.append('path').attr('class','unrest').attr('fill',radialHeat()).attr('d',area(u));
   const nEnd=d3.max(R.tn),rN=v=>R0-3-Math.max(0,Math.min(UMAX,v)-1)*8;
-  g.append('path').attr('d',d3.arc()({innerRadius:R0-4,outerRadius:R0-2,startAngle:0,endAngle:ang(nEnd)})).attr('fill',css('--norm')).attr('opacity',.85);
+  g.append('path').attr('d',d3.arc()({innerRadius:R0-6,outerRadius:R0-1,startAngle:0,endAngle:ang(nEnd)})).attr('fill',css('--norm'));
   g.append('path').attr('d',d3.areaRadial().angle((d,i)=>ang(R.tn[i])).innerRadius(d=>rN(d)).outerRadius(R0-3).curve(d3.curveMonotoneX)(UNN[op])).attr('fill',css('--norm'));
   const [ex,ey]=pol(tEnd,R0+6);g.append('circle').attr('cx',ex).attr('cy',ey).attr('r',2.2).attr('fill',css('--ink3'));
   const list=packRows(evs(op));
@@ -169,15 +175,76 @@ function drawClock(g,op,{intro=false}={}){
   if(intro){a.attr('d',e=>arc(geom(e,e.s))).transition().delay(e=>300+e.s*6).duration(700).ease(d3.easeCubicOut).attrTween('d',e=>t=>arc(geom(e,e.s+(e.e-e.s)*t)));
     ap.attr('transform','scale(0.6)').attr('opacity',0).transition().duration(900).ease(d3.easeBackOut).attr('transform','scale(1)').attr('opacity',1);}
   else a.attr('d',e=>arc(geom(e,e.e)));
-  g.append('text').attr('class','oplabel').attr('text-anchor','middle').attr('y',-2).style('font-size','19px').style('font-weight',800).style('fill',opInk(op)).text(op);
-  const po=pctOut(op);
-  g.append('text').attr('class','sublabel').attr('text-anchor','middle').attr('y',15).style('font-size','10.5px').style('font-weight',700).style('fill',css('--norm')).text(`normal ${Math.round(po.n*100)}%`);
-  g.append('text').attr('class','sublabel').attr('text-anchor','middle').attr('y',28).style('font-size','10.5px').style('font-weight',700).style('fill',css('--h3')).text(`anomalous ${Math.round(po.a*100)}%`);
-  g.append('text').attr('class','sublabel').attr('text-anchor','middle').attr('y',39).style('font-size','8.5px').style('fill',css('--ink3')).text('time out of ideal');
+  g.append('text').attr('class','oplabel').attr('text-anchor','middle').attr('y',-27).style('font-size','21px').style('font-weight',800).style('fill',opInk(op)).text(op);
+  const po=pctOut(op),gm=gMaxOut(),BW=72,bw=v=>Math.max(3,v/gm*BW);
+  const tw=g.append('g').attr('class','sublabel');
+  tw.append('text').attr('text-anchor','middle').attr('y',-13).style('font-size','8.5px').style('font-weight',600).style('fill',css('--ink3')).text('time outside ideal range');
+  [[po.n,-25,'--norm','normal',25],[po.a,23,'--anom','anomalous',33]].forEach(([v,cx,c,lb,by])=>{
+    tw.append('text').attr('x',cx).attr('y',7).attr('text-anchor','middle').style('font-size','18px').style('font-weight',800).style('fill',css(c)).text(Math.round(v*100)+'%');
+    tw.append('text').attr('x',cx).attr('y',18).attr('text-anchor','middle').style('font-size','9px').style('font-weight',700).style('fill',css(c)).text(lb);
+    const r=tw.append('rect').attr('x',-BW/2).attr('y',by).attr('height',5).attr('rx',2).attr('fill',css(c)).attr('width',0);
+    if(intro)r.transition().delay(700).duration(700).ease(d3.easeCubicOut).attr('width',bw(v));else r.attr('width',bw(v))});
+  tw.append('line').attr('x1',-BW/2).attr('x2',-BW/2).attr('y1',23).attr('y2',40).attr('stroke',css('--ink3')).attr('stroke-width',1);
   return{list,arc,geom};
 }
-function clockPos(i){const cols=3,cw=VW/cols,ch=(VH-20)/2;return{x:cw*(i%cols)+cw/2,y:ch*Math.floor(i/cols)+ch/2+18}}
+let H0=700,H0drawn=700;
+function clockPos(i){const cols=3,cw=VW/cols,ch=(H0-20)/2,face=ARC0+AROW*4+6;return{x:cw*(i%cols)+cw/2,y:ch*Math.floor(i/cols)+ch/2-2,k:Math.max(1,Math.min(1.16,(ch-28)/(2*face)))}}
 
+
+function wrapText(g,x,y,txt,w,fs,opt={}){const words=txt.split(' ');let line='',yy=y,n=0;const t=()=>g.append('text').attr('x',x).attr('y',yy).style('font-size',fs+'px').style('fill',opt.fill||css('--ink2')).style('font-weight',opt.fw||400);
+  words.forEach(wd=>{const test=line?line+' '+wd:wd;if(test.length*fs*0.53>w&&line){t().text(line);line=wd;yy+=fs*1.3;n++}else line=test});if(line){t().text(line);n++}return yy+fs*1.3}
+function sideKey(x0,y0){const g=svg.append('g').attr('class','side');const W=140;
+  g.append('text').attr('x',x0).attr('y',y0).style('font-size','14px').style('font-weight',800).style('fill',css('--ink')).text('How to read a clock');
+  let y=y0+26;
+  const item=(draw,head,body,col)=>{draw(g,x0,y);g.append('text').attr('x',x0+30).attr('y',y+4).style('font-size','12px').style('font-weight',800).style('fill',col||css('--ink')).text(head);y=wrapText(g,x0+30,y+19,body,W-30,10.5)+8};
+  item((g,x,y)=>{g.append('text').attr('x',x).attr('y',y+5).style('font-size','11px').style('font-weight',800).style('fill',css('--norm')).text('2');g.append('text').attr('x',x+9).attr('y',y+5).style('font-size','11px').style('font-weight',800).style('fill',css('--anom')).text('39')},'The numbers','% of time sensors were outside their normal range. Green normal run, red anomalous run.');
+  item((g,x,y)=>g.append('path').attr('d',d3.arc()({innerRadius:9,outerRadius:13,startAngle:-1.2,endAngle:1.2})).attr('transform',`translate(${x+11},${y+12})`).attr('fill',css('--norm')),'Green ring','The normal run. Smooth = calm.',css('--norm'));
+  item((g,x,y)=>g.append('path').attr('d',`M${x},${y+8} L${x+5},${y-4} L${x+9},${y+3} L${x+14},${y-8} L${x+20},${y+8}Z`).attr('fill',heatGrad('kg',0,y+8,0,y-8)),'Flames','Unrest of the anomalous run. Taller = sudden jumps beyond anything normal.',css('--anom'));
+  item((g,x,y)=>CATS.forEach((c,i)=>g.append('rect').attr('x',x+(i%2)*11).attr('y',y-6+Math.floor(i/2)*7).attr('width',9).attr('height',4).attr('rx',2).attr('fill',cat(c)).attr('opacity',c==='permanent'?.5:1)),'Outer arcs','Recorded faults. Arc length = how long it lasted.');
+  item((g,x,y)=>g.append('text').attr('x',x+2).attr('y',y+6).style('font-size','16px').style('fill',css('--ink2')).text('↻'),'Time','Starts at 12, runs clockwise. Full circle = '+TM+' min.');
+}
+function sideRank(x0,y0){const g=svg.append('g').attr('class','side');const ops=Object.keys(D.ops).map(o=>({o,...pctOut(o)})).sort((a,b)=>b.a-a.a);
+  g.append('text').attr('x',x0).attr('y',y0).style('font-size','14px').style('font-weight',800).style('fill',css('--ink')).text('Most disturbed runs');
+  g.append('text').attr('x',x0).attr('y',y0+16).style('font-size','10.5px').style('fill',css('--ink3')).text('time outside ideal range');
+  const xs=d3.scaleLinear([0,gMaxOut()],[0,95]);
+  ops.forEach((d,i)=>{const y=y0+40+i*44,r=g.append('g').attr('class','hit').style('cursor','pointer').on('click',()=>{if(!busy)level1(d.o,true)});
+    r.append('rect').attr('x',x0-6).attr('y',y-14).attr('width',150).attr('height',40).attr('rx',6).attr('fill','transparent');
+    r.append('text').attr('x',x0).attr('y',y).style('font-size','13px').style('font-weight',800).style('fill',opInk(d.o)).text((i+1)+'. '+d.o);
+    r.append('rect').attr('x',x0).attr('y',y+6).attr('height',5).attr('rx',2).attr('fill',css('--norm')).attr('width',Math.max(3,xs(d.n)));
+    r.append('text').attr('x',x0+Math.max(3,xs(d.n))+4).attr('y',y+11).style('font-size','9.5px').style('font-weight',700).style('fill',css('--norm')).text(Math.round(d.n*100)+'%');
+    r.append('rect').attr('x',x0).attr('y',y+14).attr('height',7).attr('rx',2).attr('fill',css('--anom')).attr('width',Math.max(3,xs(d.a)));
+    r.append('text').attr('x',x0+Math.max(3,xs(d.a))+4).attr('y',y+21).style('font-size','10.5px').style('font-weight',800).style('fill',css('--anom')).text(Math.round(d.a*100)+'%')});
+  return y0+40+ops.length*44}
+const SROW=24,STOP=32;
+function sideHead(g,x0,y,t,sub){g.append('text').attr('x',x0).attr('y',y).style('font-size','14px').style('font-weight',800).style('fill',css('--ink')).text(t);
+  g.append('text').attr('x',x0).attr('y',y+17).style('font-size','10.5px').style('fill',css('--ink3')).text(sub)}
+function sideCats(x0,y0){const g=svg.append('g').attr('class','side'),all=Object.keys(D.ops).flatMap(o=>evs(o)),cof=e=>CATS.includes(e.cat)?e.cat:'unconfirmed';
+  sideHead(g,x0,y0,all.length+' recorded faults','by type');
+  const cnt=CATS.map(c=>({c,n:all.filter(e=>cof(e)===c).length})),mx=d3.max(cnt,d=>d.n);
+  cnt.forEach((d,i)=>{const y=y0+STOP+i*SROW;
+    g.append('text').attr('x',x0).attr('y',y+10).style('font-size','12.5px').style('fill',css('--ink2')).text(d.c);
+    g.append('rect').attr('x',x0+82).attr('y',y+1).attr('height',10).attr('rx',2).attr('fill',cat(d.c)).attr('opacity',d.c==='permanent'?.6:1).attr('width',Math.max(2,d.n/mx*40));
+    g.append('text').attr('x',x0+150).attr('y',y+10).attr('text-anchor','end').style('font-size','12.5px').style('font-weight',800).style('fill',css('--ink')).text(d.n)});
+  const y1=y0+STOP+CATS.length*SROW+22;
+  sideHead(g,x0,y1,'Per run','one block per fault');
+  Object.keys(D.ops).forEach((o,i)=>{const y=y1+STOP+i*SROW,l=evs(o);
+    g.append('text').attr('x',x0).attr('y',y+10).style('font-size','12.5px').style('font-weight',800).style('fill',opInk(o)).text(o);
+    let xx=x0+46;CATS.forEach(c=>l.filter(e=>cof(e)===c).forEach(()=>{g.append('rect').attr('x',xx).attr('y',y).attr('width',7.5).attr('height',11).attr('rx',1.5).attr('fill',cat(c)).attr('opacity',c==='permanent'?.6:1);xx+=9.5}))});
+}
+function sideSens(x0,y0){const g=svg.append('g').attr('class','side'),ops=Object.keys(D.ops);
+  const rows=S.map(s=>{const per=ops.map(o=>pctOut(o).per.find(p=>p.s===s)).filter(Boolean);return{s,a:d3.mean(per,p=>p.a),hit:per.filter(p=>p.a>.1).length}}).sort((a,b)=>b.a-a.a);
+  sideHead(g,x0,y0,'Most affected sensors','avg. time outside ideal');
+  const xs=d3.scaleLinear([0,d3.max(rows,r=>r.a)],[0,28]);
+  rows.forEach((d,i)=>{const y=y0+STOP+i*SROW;
+    g.append('rect').attr('x',x0).attr('y',y).attr('width',3).attr('height',12).attr('rx',1.5).attr('fill',tcol(d.s));
+    g.append('text').attr('x',x0+7).attr('y',y+10).style('font-size','12px').style('font-weight',700).style('fill',css('--ink')).text(d.s);
+    g.append('rect').attr('x',x0+56).attr('y',y+1).attr('height',10).attr('rx',2).attr('fill',css('--anom')).attr('width',Math.max(2,xs(d.a)));
+    g.append('text').attr('x',x0+120).attr('y',y+10).attr('text-anchor','end').style('font-size','12px').style('font-weight',800).style('fill',css('--anom')).text(Math.round(d.a*100)+'%');
+    for(let k=0;k<ops.length;k++)g.append('circle').attr('cx',x0+127+k*5).attr('cy',y+6).attr('r',1.9).attr('fill',k<d.hit?css('--anom'):css('--line2'))});
+  const yb=y0+STOP+rows.length*SROW+8;
+  g.append('circle').attr('cx',x0+3).attr('cy',yb).attr('r',2).attr('fill',css('--anom'));
+  g.append('text').attr('x',x0+9).attr('y',yb+3.5).style('font-size','10.5px').style('fill',css('--ink3')).text('= runs off >10% of time');
+}
 /* ---------- level 0: all runs ---------- */
 function level0(intro){
   stopReplay(true);
@@ -186,7 +253,7 @@ function level0(intro){
   const ops=Object.keys(D.ops);
   ops.forEach((op,i)=>{
     const p=clockPos(i);
-    const g=svg.append('g').attr('class','clock hit').attr('data-op',op).attr('transform',`translate(${p.x},${p.y})`);
+    const g=svg.append('g').attr('class','clock hit').attr('data-op',op).attr('transform',`translate(${p.x},${p.y}) scale(${p.k})`);
     const inner=g.append('g');
     const {list}=drawClock(inner,op,{intro:true});
     g.on('pointerenter',()=>inner.transition().duration(200).attr('transform','scale(1.06)'))
@@ -195,8 +262,9 @@ function level0(intro){
      .on('click',()=>{if(!busy)level1(op,true)});
     if(intro)g.attr('opacity',0).transition().delay(i*90).duration(400).attr('opacity',1);
   });
-  const k=svg.append('g').attr('transform',`translate(${VW-120},${VH-30})`).attr('opacity',.9);
+  H0drawn=H0;const k=svg.append('g').attr('transform',`translate(${VW-120},${H0-30})`).attr('opacity',.9);
   k.append('text').attr('text-anchor','middle').style('font-size','11.5px').text('↻ time runs clockwise from 12');
+  {const yo=90+(H0-700)/2;sideCats(-150,yo);sideSens(1203,yo);}
 }
 
 /* ---------- level 1: one run ---------- */
@@ -233,7 +301,9 @@ function decorate(g,op){
     lab.append('text').attr('x',BIG.x+x*k).attr('y',BIG.y+y*k+4).attr('text-anchor',Math.sin(ang(mid))>0.15?'start':Math.sin(ang(mid))<-0.15?'end':'middle').style('font-size','12.5px').style('font-weight',600).style('fill',css('--ink')).text(e.sid)});
   const leg=lab.append('g').attr('transform',`translate(40,${VH-80})`);
   leg.append('path').attr('d','M0,40 L0,22 C10,10 18,30 28,8 L40,0 L52,26 L64,40 Z').attr('fill',heatGrad('lgh',0,VH-40,0,VH-80));
-  leg.append('text').attr('x',72).attr('y',24).style('font-size','12px').text('spike = beyond normal');
+  leg.append('text').attr('x',72).attr('y',24).style('font-size','12px').style('font-weight',700).style('fill',css('--anom')).text('outer spikes = anomalous run');
+  leg.append('rect').attr('x',0).attr('y',-22).attr('width',64).attr('height',8).attr('rx',3).attr('fill',css('--norm'));
+  leg.append('text').attr('x',72).attr('y',-14).style('font-size','12px').style('font-weight',700).style('fill',css('--norm')).text('inner green ring = normal run');
   panel(lab,op,inner);
   buildReplay(lab,op,inner);
   lab.transition().duration(400).attr('opacity',1);
@@ -243,10 +313,23 @@ function hlArc(inner,key){inner.selectAll('path.ev').transition().duration(150).
 function panel(lab,op,inner){
   const R=D.ops[op],u=UN[op],tEnd=d3.max(R.t),list=packRows(evs(op)),g=lab.append('g').attr('class','panel');
   const go=e=>{if(!busy){hideTip();level2(e,true)}};
+  /* 0 · verdict: normal vs anomalous at a glance */
+  {const po0=pctOut(op),xv=d3.scaleLinear([0,Math.max(.5,gMaxOut())],[0,P.x1-P.x0-170]);
+   title(g,P.x0,22,'Time outside the ideal range');
+   [[po0.n,'normal run','--norm',30],[po0.a,'anomalous run','--anom',52]].forEach(([v,lb,c,yy])=>{
+     g.append('text').attr('x',P.x0+92).attr('y',yy+13).attr('text-anchor','end').style('font-size','13px').style('font-weight',700).style('fill',css(c)).text(lb);
+     g.append('rect').attr('x',P.x0+100).attr('y',yy).attr('height',18).attr('rx',3).attr('fill',css(c)).attr('width',0).transition().duration(700).ease(d3.easeCubicOut).attr('width',Math.max(3,xv(v)));
+     g.append('text').attr('x',P.x0+100+Math.max(3,xv(v))+8).attr('y',yy+14).style('font-size','16px').style('font-weight',800).style('fill',css(c)).text((v*100).toFixed(v<.1?1:0)+'%')});
+   const k=po0.a/Math.max(po0.n,1e-3);
+   if(k>=1.5)g.append('text').attr('x',P.x1).attr('y',66).attr('text-anchor','end').style('font-size','13px').style('font-weight',700).style('fill',css('--ink2')).text(`≈ ${Math.round(k)}× more`);}
   /* 1 · unrest over time */
   title(g,P.x0,92,'Unrest over time');
   const x=d3.scaleLinear([0,tEnd],[P.x0,P.x1]),yb=225,yh=90,y=d3.scaleLinear([0,UMAX],[yb,yb-yh]).clamp(true);
   g.append('path').attr('d',d3.area().x((d,i)=>x(R.t[i])).y0(yb).y1(d=>y(d)).curve(d3.curveMonotoneX)(u)).attr('fill',heatGrad('ph',0,yb,0,yb-yh));
+  {const nt=R.tn.map((t,i)=>({t,v:UNN[op][i]})).filter(d=>d.t<=tEnd);
+   g.append('path').attr('d',d3.area().x(d=>x(d.t)).y0(yb).y1(d=>y(d.v)).curve(d3.curveMonotoneX)(nt)).attr('fill',css('--norm')).attr('opacity',.28).style('pointer-events','none');
+   g.append('path').attr('d',d3.line().x(d=>x(d.t)).y(d=>y(d.v)).curve(d3.curveMonotoneX)(nt)).attr('fill','none').attr('stroke',css('--norm')).attr('stroke-width',2.2).style('pointer-events','none');
+   g.append('text').attr('x',P.x0+6).attr('y',yb-6).style('font-size','11.5px').style('font-weight',800).style('fill',css('--norm')).style('paint-order','stroke').style('stroke','#fff').style('stroke-width',3).text('normal run');}
   g.append('line').attr('x1',P.x0).attr('x2',P.x1).attr('y1',y(1)).attr('y2',y(1)).attr('stroke',css('--ink3')).attr('stroke-dasharray','3 3');
   g.append('text').attr('x',P.x1).attr('y',y(1)-4).attr('text-anchor','end').style('font-size','11px').style('fill',css('--ink3')).text('normal max');
   g.append('g').attr('class','axis').attr('transform',`translate(0,${yb})`).call(d3.axisBottom(x).ticks(6).tickFormat(d=>d+' min'));
@@ -257,15 +340,15 @@ function panel(lab,op,inner){
   g.append('rect').attr('x',P.x0).attr('width',P.x1-P.x0).attr('y',yb-yh).attr('height',yh).attr('fill','transparent').style('cursor','pointer').on('click',ev=>{const tt=x.invert(d3.pointer(ev,svg.node())[0]);stopReplay();RP&&RP.start();RP&&RP.set(tt)})
     .on('pointermove',ev=>{const tt=x.invert(d3.pointer(ev,svg.node())[0]),i=Math.min(R.t.length-1,d3.bisectLeft(R.t,tt));const top=S.map(s=>[s,R.dev[s][i]]).sort((a,b)=>b[1]-a[1]).slice(0,3);showTip(`<b>${R.t[i].toFixed(0)} min</b> · unrest ${u[i].toFixed(1)}<br><span class="m">${top.map(d=>d[0]+' '+d[1].toFixed(1)).join(' · ')}</span>`,ev)}).on('pointerleave',hideTip);
   /* 2 · normal vs anomalous per sensor */
-  const y2=285;title(g,P.x0,y2,'Normal vs anomalous · time out of ideal');
+  const y2=285;title(g,P.x0,y2,'Per sensor · normal vs anomalous, time out of ideal');
   const po=pctOut(op),PR=po.per.slice().sort((a,b)=>b.a-a.a),h2=14,xp=d3.scaleLinear([0,Math.max(.1,d3.max(PR,d=>Math.max(d.a,d.n)))],[P.x0+60,P.x1-70]);
   const r2=g.selectAll('g.nv').data(PR).join('g').attr('class','nv hit').attr('transform',(d,i)=>`translate(0,${y2+10+i*h2})`)
     .on('pointermove',(ev,d)=>showTip(`<b>${d.s}</b> · ${PLANT[d.s]}<br><span style="color:${css('--norm')}">normal ${(d.n*100).toFixed(1)}%</span> · <span style="color:${css('--h3')}">anomalous ${(d.a*100).toFixed(1)}%</span><br><span class="m">ideal ${R.band[d.s][0]}–${R.band[d.s][1]}</span>`,ev)).on('pointerleave',hideTip)
     .on('click',(ev,d)=>{const best=SR.find(x=>x.s===d.s);if(busy||!best||!best.best)return;hideTip();level2(best.best,true)});
   r2.append('text').attr('x',P.x0+52).attr('y',h2/2+3).attr('text-anchor','end').style('font-size','11px').text(d=>d.s);
-  r2.append('rect').attr('x',P.x0+60).attr('y',1).attr('height',5).attr('rx',2).attr('width',0).attr('fill',css('--norm')).transition().delay((d,i)=>i*35).duration(500).attr('width',d=>Math.max(1.5,xp(d.n)-P.x0-60));
-  r2.append('rect').attr('x',P.x0+60).attr('y',6.5).attr('height',6).attr('rx',2).attr('width',0).attr('fill',css('--h3')).transition().delay((d,i)=>150+i*35).duration(500).attr('width',d=>Math.max(1.5,xp(d.a)-P.x0-60));
-  r2.append('text').attr('x',d=>xp(Math.max(d.a,d.n))+5).attr('y',h2/2+3).style('font-size','10.5px').html(d=>`<tspan fill="${css('--norm')}">${Math.round(d.n*100)}%</tspan> <tspan fill="${css('--ink3')}">→</tspan> <tspan fill="${css('--h3')}" font-weight="700">${Math.round(d.a*100)}%</tspan>`);
+  r2.append('rect').attr('x',P.x0+60).attr('y',0.5).attr('height',6).attr('rx',2).attr('width',0).attr('fill',css('--norm')).transition().delay((d,i)=>i*35).duration(500).attr('width',d=>Math.max(4,xp(d.n)-P.x0-60));
+  r2.append('rect').attr('x',P.x0+60).attr('y',7).attr('height',6).attr('rx',2).attr('width',0).attr('fill',css('--anom')).transition().delay((d,i)=>150+i*35).duration(500).attr('width',d=>Math.max(1.5,xp(d.a)-P.x0-60));
+  r2.append('text').attr('x',d=>xp(Math.max(d.a,d.n))+5).attr('y',h2/2+3).style('font-size','10.5px').html(d=>`<tspan fill="${css('--norm')}">${Math.round(d.n*100)}%</tspan> <tspan fill="${css('--ink3')}">→</tspan> <tspan fill="${css('--anom')}" font-weight="700">${Math.round(d.a*100)}%</tspan>`);
   const L=[],h2b=0;
   /* 3 · sensors that reacted */
   const y3=y2+10+PR.length*h2+34;title(g,P.x0,y3,'Strongest sensor reaction');
@@ -296,7 +379,7 @@ function level2(e,unroll){
   const linBase=t=>[X(t),L2.bandY+L2.bandH];
   const lerp=(a,b,s)=>[a[0]+(b[0]-a[0])*s,a[1]+(b[1]-a[1])*s];
   const bandPath=s=>{const top=ts.map((t,i)=>lerp(polTop(t,us[i]),linTop(t,us[i]),s)),base=ts.map(t=>lerp(polBase(t),linBase(t),s)).reverse();return'M'+top.concat(base).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+'Z'};
-  const er=ARC0+e.row*AROW,ea=Math.max(e.s,dom[0]),eb=Math.min(e.e,dom[1]),N=40,es=d3.range(N+1).map(j=>ea+(eb-ea)*j/N);
+  const er=ARC0+(e.row||0)*AROW,ea=Math.max(e.s,dom[0]),eb=Math.min(e.e,dom[1]),N=40,es=d3.range(N+1).map(j=>ea+(eb-ea)*j/N);
   const arcPath=s=>{const o=es.map(t=>{const [x,y]=pol(t,er+AROW-2.5);return lerp([BIG.x+x*k,BIG.y+y*k],[X(t),L2.bandY-16],s)}),
     n=es.map(t=>{const [x,y]=pol(t,er);return lerp([BIG.x+x*k,BIG.y+y*k],[X(t),L2.bandY-8],s)}).reverse();return'M'+o.concat(n).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+'Z'};
   const fromClock=unroll&&!svg.select('g.clock').empty();
@@ -315,6 +398,8 @@ function level2(e,unroll){
     ax.transition().duration(300).attr('opacity',1);
     stage.append('line').attr('class','keep').attr('x1',L2.x0).attr('x2',L2.x1).attr('y1',L2.bandY+L2.bandH-L2.bandH/UMAX).attr('y2',L2.bandY+L2.bandH-L2.bandH/UMAX).attr('stroke',css('--ink3')).attr('stroke-dasharray','3 3');
     stage.append('text').attr('class','keep').attr('x',L2.x0-12).attr('y',L2.bandY+L2.bandH-6).attr('text-anchor','end').style('font-size','12px').text('unrest');
+    {const [k0,k1]=rng(R.tn,dom[0],dom[1]),nt=R.tn.slice(k0,k1+1).map((t,i)=>({t,v:UNN[op][k0+i]}));
+     if(nt.length>1&&R.tn[k0]>=dom[0]-1)stage.append('path').attr('class','keep').attr('d',d3.line().x(d=>X(d.t)).y(d=>L2.bandY+L2.bandH-Math.min(UMAX,d.v)/UMAX*L2.bandH).curve(d3.curveMonotoneX)(nt)).attr('fill','none').attr('stroke',css('--norm')).attr('stroke-width',2.4).attr('opacity',0).transition().duration(500).attr('opacity',1);}
     stage.append('text').attr('class','keep').attr('x',L2.x0-12).attr('y',L2.bandY-8).attr('text-anchor','end').style('font-weight',700).style('fill',cat(e.cat)).text(e.sid);
     stage.append('text').attr('class','keep').attr('x',(X(ea)+X(eb))/2).attr('y',L2.bandY-24).attr('text-anchor','middle').style('font-size','12.5px').style('fill',css('--ink2')).text(shortP(e.p));
     const ranked=S.map(s=>({s,v:react(op,e,s),ann:e.sens.includes(s)})).sort((a,b)=>b.v-a.v).slice(0,L2.nRows);
@@ -333,8 +418,8 @@ function level2(e,unroll){
       g.append('text').attr('x',L2.x0-12).attr('y',y0+L2.rowH/2).attr('text-anchor','end').style('font-weight',700).style('fill',css('--ink')).text((d.ann?'◆ ':'')+d.s);
       g.append('text').attr('x',L2.x0-12).attr('y',y0+L2.rowH/2+16).attr('text-anchor','end').style('font-size','11.5px').text(PLANT[d.s]);
       const hot=d.v>1;
-      const tc=tcol(d.s);g.append('rect').attr('x',L2.x0).attr('width',L2.x1-L2.x0).attr('y',Y(bd[1])).attr('height',Math.max(1,Y(bd[0])-Y(bd[1]))).attr('fill',tc).attr('opacity',.13);
-      [bd[0],bd[1]].forEach(v=>g.append('line').attr('x1',L2.x0).attr('x2',L2.x1).attr('y1',Y(v)).attr('y2',Y(v)).attr('stroke',tc).attr('stroke-opacity',.55).attr('stroke-width',.8).attr('stroke-dasharray','2 3'));
+      const tc=tcol(d.s);g.append('rect').attr('x',L2.x0).attr('width',L2.x1-L2.x0).attr('y',Y(bd[1])).attr('height',Math.max(1,Y(bd[0])-Y(bd[1]))).attr('fill',css('--norm')).attr('opacity',.14);
+      [bd[0],bd[1]].forEach(v=>g.append('line').attr('x1',L2.x0).attr('x2',L2.x1).attr('y1',Y(v)).attr('y2',Y(v)).attr('stroke',css('--norm')).attr('stroke-opacity',.6).attr('stroke-width',.9).attr('stroke-dasharray','2 3'));
       g.append('rect').attr('x',L2.x0-8).attr('width',3).attr('y',y0+8).attr('height',L2.rowH-16).attr('rx',1.5).attr('fill',tc);
       const out=ts.map((t,i)=>({t,v:va[i]})).filter(q=>q.v!=null),frac=out.filter(q=>q.v<bd[0]||q.v>bd[1]).length/Math.max(1,out.length);
       g.append('text').attr('x',L2.x1+40).attr('y',y0+L2.rowH-4).attr('text-anchor','middle').style('font-size','10.5px').style('fill',frac>.05?css('--crit'):css('--ink3')).text(Math.round(frac*100)+'% out');
@@ -342,11 +427,13 @@ function level2(e,unroll){
       g.append('text').attr('x',L2.x1+40).attr('y',y0+L2.rowH/2+4).attr('text-anchor','middle').style('font-size','12px').style('font-weight',700).style('fill',d.v>1.6?'#fff':css('--ink')).text(d.v.toFixed(1));
       const ln=d3.line().x(p=>X(p.t)).y(p=>Y(p.v));
       const np=R.tn.slice(j0,j1+1).map((t,i)=>({t,v:vn[i]})).filter(p=>p.v!=null);
-      if(np.length)g.append('path').attr('d',ln(np)).attr('fill','none').attr('stroke',css('--norm')).attr('stroke-width',1.4).attr('stroke-dasharray','4 3').attr('opacity',.9);
-      const p=g.append('path').attr('d',ln(out)).attr('fill','none').attr('stroke',tc).attr('stroke-width',1.7);
+      if(np.length)g.append('path').attr('d',ln(np)).attr('fill','none').attr('stroke',css('--norm')).attr('stroke-width',2.6).attr('stroke-linejoin','round').attr('opacity',.85);
+      const clampB=v=>Math.max(bd[0],Math.min(bd[1],v));
+      g.append('path').attr('d',d3.area().x(p=>X(p.t)).y0(p=>Y(clampB(p.v))).y1(p=>Y(p.v))(out)).attr('fill',css('--anom')).attr('opacity',0).transition().delay(900+r*80).duration(400).attr('opacity',.22);
+      const p=g.append('path').attr('d',ln(out)).attr('fill','none').attr('stroke',css('--ink2')).attr('stroke-width',1.6);
       const isOut=q=>q.v<bd[0]||q.v>bd[1];
       const segs=[];let cur=null;out.forEach((q,i)=>{if(isOut(q)){if(!cur){cur=i>0?[out[i-1]]:[];segs.push(cur)}cur.push(q)}else if(cur){cur.push(q);cur=null}});
-      g.selectAll('path.out').data(segs).join('path').attr('class','out').attr('d',sg=>ln(sg)).attr('fill','none').attr('stroke',css('--h3')).attr('stroke-width',2.8).attr('stroke-linecap','round').attr('opacity',0).transition().delay(900+r*80).duration(400).attr('opacity',1);
+      g.selectAll('path.out').data(segs).join('path').attr('class','out').attr('d',sg=>ln(sg)).attr('fill','none').attr('stroke',css('--anom')).attr('stroke-width',2.8).attr('stroke-linecap','round').attr('opacity',0).transition().delay(900+r*80).duration(400).attr('opacity',1);
       const L=p.node().getTotalLength();p.attr('stroke-dasharray',L+' '+L).attr('stroke-dashoffset',L).transition().delay(150+r*80).duration(900).ease(d3.easeCubicOut).attr('stroke-dashoffset',0);
       g.transition().delay(r*80).duration(300).attr('opacity',1);
       g.on('pointerenter',function(){d3.select(this).select('.bgr').attr('fill',css('--line')).attr('opacity',.5)})
@@ -355,16 +442,13 @@ function level2(e,unroll){
     const cross=stage.append('line').attr('y1',L2.bandY).attr('y2',yTop+H).attr('stroke',css('--ink3')).style('display','none').style('pointer-events','none');
     stage.selectAll('g.row').on('pointermove',ev=>{const [px]=d3.pointer(ev,svg.node());if(px<L2.x0||px>L2.x1){cross.style('display','none');return}
       const t=X.invert(px),i=Math.min(R.t.length-1,d3.bisectLeft(R.t,t));cross.attr('x1',X(R.t[i])).attr('x2',X(R.t[i])).style('display',null);
-      showTip(`<b>${R.t[i].toFixed(1)} min</b><table><tr class="m"><td></td><td>now</td><td>ideal</td><td></td></tr>${ranked.map(d=>{const v=R.raw[d.s][i],b=R.band[d.s],o=v!=null&&(v<b[0]||v>b[1]);return`<tr><td><b>${d.s}</b></td><td style="color:${o?css('--crit'):css('--ink')}">${v??'–'}</td><td class="m">${b[0]}–${b[1]}</td><td style="color:${o?css('--crit'):css('--c-permanent')}">${o?(v>b[1]?'▲ high':'▼ low'):'✓'}</td></tr>`}).join('')}</table>`,ev)});
+      showTip(`<b>${R.t[i].toFixed(1)} min</b><table><tr class="m"><td></td><td>anomalous</td><td>normal</td><td>ideal</td><td></td></tr>${ranked.map(d=>{const v=R.raw[d.s][i],b=R.band[d.s],o=v!=null&&(v<b[0]||v>b[1]),jn=d3.bisectLeft(R.tn,R.t[i]),vn=jn<R.tn.length&&Math.abs(R.tn[jn]-R.t[i])<1?R.rawn[d.s][jn]:null;return`<tr><td><b>${d.s}</b></td><td style="color:${o?css('--crit'):css('--ink')}">${v??'–'}</td><td style="color:${css('--norm')}">${vn??'–'}</td><td class="m">${b[0]}–${b[1]}</td><td style="color:${o?css('--crit'):css('--c-permanent')}">${o?(v>b[1]?'▲ high':'▼ low'):'✓'}</td></tr>`}).join('')}</table>`,ev)});
     const lg=stage.append('g').attr('transform',`translate(${L2.x0},${yTop+H+12})`);
-    lg.append('rect').attr('width',22).attr('height',12).attr('fill',css('--t-flow')).attr('opacity',.18).attr('stroke',css('--t-flow')).attr('stroke-dasharray','2 3');
-    lg.append('text').attr('x',30).attr('y',10).style('font-size','12px').text('ideal range (middle 98% of normal run)');
-    lg.append('line').attr('x1',300).attr('x2',322).attr('y1',6).attr('y2',6).attr('stroke',css('--t-flow')).attr('stroke-width',1.7);
-    lg.append('text').attr('x',330).attr('y',10).style('font-size','12px').text('anomalous run');
-    lg.append('line').attr('x1',580).attr('x2',602).attr('y1',6).attr('y2',6).attr('stroke',css('--norm')).attr('stroke-width',1.6).attr('stroke-dasharray','4 3');
-    lg.append('text').attr('x',610).attr('y',10).style('font-size','12px').text('normal run (same minute)');
-    lg.append('line').attr('x1',440).attr('x2',462).attr('y1',6).attr('y2',6).attr('stroke',css('--h3')).attr('stroke-width',2.8);
-    lg.append('text').attr('x',470).attr('y',10).style('font-size','12px').text('outside ideal');
+    [[0,'band','ideal range (98% of normal run)'],[255,'norm','normal run (same minute)'],[470,'anom','anomalous run'],[610,'out','anomalous, outside ideal']].forEach(([xx,k,lb])=>{
+      if(k==='band')lg.append('rect').attr('x',xx).attr('width',22).attr('height',12).attr('fill',css('--norm')).attr('opacity',.2).attr('stroke',css('--norm')).attr('stroke-dasharray','2 3');
+      else if(k==='out'){lg.append('rect').attr('x',xx).attr('y',0).attr('width',22).attr('height',12).attr('fill',css('--anom')).attr('opacity',.22);lg.append('line').attr('x1',xx).attr('x2',xx+22).attr('y1',2).attr('y2',2).attr('stroke',css('--anom')).attr('stroke-width',2.8)}
+      else lg.append('line').attr('x1',xx).attr('x2',xx+22).attr('y1',6).attr('y2',6).attr('stroke',css(k==='norm'?'--norm':'--ink2')).attr('stroke-width',k==='norm'?2.6:1.6);
+      lg.append('text').attr('x',xx+30).attr('y',10).style('font-size','12.5px').style('font-weight',k==='band'?400:700).style('fill',css(k==='norm'?'--norm':k==='out'?'--anom':'--ink2')).text(lb)});
     stage.append('text').attr('x',L2.x1+40).attr('y',yTop-8).attr('text-anchor','middle').style('font-size','11.5px').style('fill',css('--ink3')).text('score');
   }
 }
@@ -418,7 +502,7 @@ async function story(){
   const ok=()=>storyOn,ops=Object.keys(D.ops);
   const nev=d3.sum(ops,o=>evs(o).length);
   level0(true);caption(`${ops.length} runs · ${nev} annotated anomalies · one clock each`);await wait(3800);if(!ok())return;
-  caption('Inside: normal run · outside: anomalous run');await wait(3800);if(!ok())return;
+  caption('Green = normal run · red = anomalous run · bars = time outside the ideal range');await wait(3800);if(!ok())return;
   for(const op of ops){
     if(state.level!==0){level0(false);await wait(900);if(!ok())return;}
     level1(op,true);const p=pctOut(op);caption(`${op} · normal ${Math.round(p.n*100)}% vs anomalous ${Math.round(p.a*100)}% out of ideal`);await wait(1900);if(!ok())return;
@@ -450,7 +534,7 @@ function shortP(p){p=p.replace(/\s*\(.*?\)/g,'');return p.length>70?p.slice(0,68
 function fitView(){
   try{
     const sw=document.querySelector('.stage-wrap'),hint=document.getElementById('hint'),foot=document.querySelector('.foot');
-    const below=(hint?hint.offsetHeight:0)+(foot?foot.offsetHeight+6:0)+34;
+    const below=(hint?hint.offsetHeight:0)+(foot?foot.offsetHeight+6:0)+14;
     let fe=null,P=null;try{fe=window.frameElement;P=window.parent;void P.innerHeight}catch(e){fe=null;P=null}
     let avail;
     if(fe&&P&&P!==window){
@@ -460,8 +544,11 @@ function fitView(){
       avail=window.innerHeight-sw.getBoundingClientRect().top-(window.scrollY||0)-below;
     }
     avail=Math.max(320,Math.floor(avail));
-    const maxByWidth=Math.floor(sw.parentElement.clientWidth*700/1200);
-    sw.style.height=Math.min(avail,maxByWidth)+'px';
+    const W=sw.parentElement.clientWidth;
+    if(state.level===0){H0=Math.max(700,Math.min(880,Math.floor(avail*1520/W)));sw.style.height=Math.min(avail,Math.floor(W*H0/1520))+'px';
+      d3.select('#v').attr('viewBox',`-160 0 1520 ${H0}`);d3.select('#bg').attr('viewBox',`-160 ${-(H0-700)/2} 1520 ${H0}`);
+      if(Math.abs(H0-H0drawn)>8&&!busy&&!storyOn&&D&&!svg.select('g.clock').empty())setTimeout(()=>{if(state.level===0&&!busy&&!storyOn)level0(false)},0);}
+    else sw.style.height=Math.min(avail,Math.floor(W*700/1200))+'px';
     if(fe){const hh=Math.ceil(document.querySelector('.wrap').getBoundingClientRect().bottom+(window.scrollY||0))+4;fe.style.height=hh+'px';fe.setAttribute('height',hh)}
   }catch(e){}
 }
